@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZomatoAI Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#690005",
+                    "surface-dim": "#111319",
+                    "inverse-surface": "#e2e2eb",
+                    "on-primary-fixed-variant": "#92001c",
+                    "on-secondary-fixed": "#410006",
+                    "surface": "#111319",
+                    "secondary-fixed-dim": "#ffb3b0",
+                    "error": "#ffb4ab",
+                    "on-secondary": "#68000f",
+                    "background": "#111319",
+                    "secondary-fixed": "#ffdad8",
+                    "on-primary": "#680011",
+                    "tertiary-container": "#8d90a0",
+                    "outline": "#ab8987",
+                    "surface-container-high": "#282a30",
+                    "on-tertiary-container": "#252936",
+                    "primary": "#ffb3b1",
+                    "on-background": "#e2e2eb",
+                    "on-tertiary-fixed": "#171b27",
+                    "on-tertiary-fixed-variant": "#424654",
+                    "error-container": "#93000a",
+                    "secondary": "#ffb3b0",
+                    "surface-bright": "#373940",
+                    "tertiary": "#c3c6d7",
+                    "on-secondary-container": "#ff9e9b",
+                    "on-primary-container": "#5b000e",
+                    "primary-fixed-dim": "#ffb3b1",
+                    "on-tertiary": "#2c303d",
+                    "on-primary-fixed": "#410007",
+                    "surface-container-lowest": "#0c0e14",
+                    "on-secondary-fixed-variant": "#8c1520",
+                    "primary-container": "#ff535a",
+                    "surface-container-low": "#191b22",
+                    "outline-variant": "#5b403f",
+                    "inverse-on-surface": "#2e3037",
+                    "inverse-primary": "#bb162c",
+                    "surface-container-highest": "#33343b",
+                    "surface-variant": "#33343b",
+                    "surface-container": "#1e1f26",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-fixed": "#dfe2f3",
+                    "surface-tint": "#ffb3b1",
+                    "on-surface": "#e2e2eb",
+                    "tertiary-fixed-dim": "#c3c6d7",
+                    "on-surface-variant": "#e4bebc",
+                    "primary-fixed": "#ffdad8",
+                    "crimson-accent": "#E23744"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "base": "8px",
+                    "section-gap": "48px"
+            },
+            "fontFamily": {
+                    "body-md": ["Outfit"],
+                    "headline-md": ["Outfit"],
+                    "display-lg-mobile": ["Outfit"],
+                    "display-lg": ["Outfit"],
+                    "body-lg": ["Outfit"],
+                    "label-caps": ["Outfit"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0F1117;
+            color: #e2e2eb;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .crimson-gradient {
+            background: linear-gradient(135deg, #E23744 0%, #ff535a 100%);
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 30px -5px rgba(226, 55, 68, 0.4);
+            transform: translateY(-4px);
+        }
+
+        .staggered-fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: rgba(255,255,255,0.1);
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #E23744;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(226, 55, 68, 0.5);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .active-pill {
+            background: #E23744;
+            color: white;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-body-md">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center px-container-margin h-16">
+<div class="flex items-center gap-base">
+<span class="font-display-lg-mobile text-display-lg-mobile font-bold bg-clip-text text-transparent bg-gradient-to-r from-crimson-accent to-secondary">ZomatoAI</span>
+</div>
+<div class="flex items-center gap-gutter">
+<div class="flex items-center gap-base px-4 py-1.5 rounded-full bg-white/5 border border-white/10">
+<span class="material-symbols-outlined text-green-400 text-[18px]">verified_user</span>
+<span class="font-label-caps text-on-surface-variant">Groq Status: <span class="text-green-400">Active</span></span>
+</div>
+<div class="flex gap-base">
+<button class="p-2 rounded-full hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<button class="p-2 rounded-full hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 px-container-margin pb-section-gap max-w-[1440px] mx-auto">
+<div class="flex flex-col md:flex-row gap-gutter items-start">
+<!-- Left Column: Preference Form -->
+<aside class="w-full md:w-[30%] md:sticky md:top-24 space-y-gutter">
+<section class="glass-panel p-gutter rounded-xl shadow-xl flex flex-col gap-gutter">
+<div class="flex items-center gap-base pb-base border-b border-white/5">
+<span class="material-symbols-outlined text-crimson-accent">tune</span>
+<h2 class="font-headline-md text-on-surface">Preferences</h2>
+</div>
+<!-- City Selection -->
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant">Target City</label>
+<div class="relative group">
+<select class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-on-surface appearance-none focus:ring-2 focus:ring-crimson-accent outline-none">
+<option value="mumbai">Mumbai, MH</option>
+<option value="delhi">New Delhi, DL</option>
+<option value="bangalore">Bangalore, KA</option>
+<option value="dubai">Dubai, UAE</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Budget Toggle -->
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant">Budget Range</label>
+<div class="flex gap-2 p-1 bg-white/5 rounded-lg border border-white/10">
+<button class="flex-1 py-2 rounded-md text-sm font-medium transition-all hover:bg-white/5">Low</button>
+<button class="flex-1 py-2 rounded-md text-sm font-medium transition-all active-pill shadow-lg shadow-crimson-accent/20">Medium</button>
+<button class="flex-1 py-2 rounded-md text-sm font-medium transition-all hover:bg-white/5">High</button>
+</div>
+</div>
+<!-- Cuisine Input -->
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant">Cuisine</label>
+<div class="relative">
+<input class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-crimson-accent outline-none" placeholder="e.g. Modern Indian, Sushi..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50">restaurant</span>
+</div>
+</div>
+<!-- Rating Slider -->
+<div class="space-y-2">
+<div class="flex justify-between items-center">
+<label class="font-label-caps text-on-surface-variant">Minimum Rating</label>
+<span class="text-crimson-accent font-bold">4.2+</span>
+</div>
+<input class="w-full accent-crimson-accent cursor-pointer" max="5" min="0" step="0.1" type="range" value="4.2"/>
+</div>
+<!-- Top-N Stepper -->
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant">Recommendations Count</label>
+<div class="flex items-center gap-gutter">
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<div class="flex-1 text-center font-bold text-headline-md text-on-surface">6</div>
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Preferences Textarea -->
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant">AI Prompt Add-ons</label>
+<textarea class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-on-surface focus:ring-2 focus:ring-crimson-accent outline-none resize-none" placeholder="Tell the AI about your mood, vibe, or specific dietary needs..." rows="3"></textarea>
+</div>
+<!-- CTA Button -->
+<button class="w-full crimson-gradient py-4 rounded-xl font-bold text-white shadow-xl shadow-crimson-accent/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-base">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        Get AI Recommendations
+                    </button>
+<!-- Preset Chips -->
+<div class="flex flex-wrap gap-2 pt-base">
+<button class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[12px] font-semibold hover:border-crimson-accent/50 transition-colors">Late Night</button>
+<button class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[12px] font-semibold hover:border-crimson-accent/50 transition-colors">Healthy</button>
+<button class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[12px] font-semibold hover:border-crimson-accent/50 transition-colors">Date Night</button>
+<button class="px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-[12px] font-semibold hover:border-crimson-accent/50 transition-colors">Rooftop</button>
+</div>
+</section>
+</aside>
+<!-- Right Column: Content Grid -->
+<div class="w-full md:w-[70%] space-y-gutter">
+<!-- AI Summary Banner -->
+<section class="glass-panel p-gutter rounded-2xl overflow-hidden relative group">
+
+<div class="relative z-10 flex items-center gap-gutter">
+<div class="w-12 h-12 rounded-full crimson-gradient flex items-center justify-center animate-pulse">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h3 class="font-headline-md text-on-surface mb-1">AI Recommendation Engine</h3>
+<p class="text-on-surface-variant font-body-md italic">"Analyzing 500+ restaurants for your mood... Curating the perfect match in Mumbai's culinary scene."</p>
+</div>
+</div>
+</section>
+<!-- Restaurant Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Restaurant Card 1 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.1s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A moody, high-end fine dining restaurant interior with dim warm lighting, gold accents, and plush velvet seating. The atmosphere is sophisticated and intimate, with a view of a city skyline through large windows at night. Cinematic lighting highlights the texture of marble tables and crystal glassware." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSYdCje57PBGq7UHSxoHPLp49Gz3Jtpb40qSNDtU9AqolEAwNlWpBE7HV-2C0kXc2VdZsQ5tE_PPFUh0sYVy3j5W4PMMTrbOlLJdLf3EAQXI9oWqNIOMX-VTgdPzO_PGxWsNo_sYr3bWn9C_fR6NLgiYACvYuv1H9vIkjQ4NSVrIK7sR_oX-nj1_MLIE51Xv4ubG2WKgV19uXyKLFpIhI32d5xgFvjzQZIOTZDjlzQfZMiXjzdw6_yNwL_GIZS9FthYXDRpsGPpNw')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#1</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.8</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">The Gilded Fork</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Contemporary</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Fine Dining</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "The AI detected a preference for intimate vibes. This venue is currently trending for its rare ingredient pairings and silent service."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+<!-- Restaurant Card 2 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.2s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A vibrant, bustling open kitchen restaurant with chefs preparing sushi and bao. Neon signs in deep red and blue reflect on polished dark wood surfaces. The style is modern industrial with exposed brick and hanging pendant lights, creating a high-energy urban atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_cWnkilJj6lhSFo6guN6qbgOqMAFh_gvAWb1Qyjv-o5tCSxbJUBaD7MWmar8Q59HQYWfZS3bVNwrGc_1ZZrLjXnoAITGnSM1ZlA188tfF3StT6EgH9ry92E9fs5KJYm7f9hN6sqeGN2AtVfa_XALR8HSPUkDTBK2kBEj5163WxgMoDUFzkOcFtR4UZCdefR9p61QVHrpR_U4mBfCihXb5_qXxDqV0ik51s2_m7u76t8W9i4UgwDkfFZF8WI4ztn5hU2XrsswoG6M')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#2</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.5</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">Neon Umami</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Asian Fusion</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Late Night</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "Matches your 'Late Night' preset. Excellent social scores for groups and experimental cocktails."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+<!-- Restaurant Card 3 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.3s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A minimalist, sun-drenched cafe interior with lots of green plants, light oak wood furniture, and large windows. The aesthetic is clean, organic, and serene, emphasizing health and wellness. Soft natural lighting creates a calm, inviting morning atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5Ws8NnrV1RdAtYpEUV9ZUmHuuLSX1NV-GS4-ZwRo59fcs4B7LLSAKPc-FlMOK9wcx557DyVcKQ8fGuzfRccvUVXSZ0MGdqaPnyXci2ueosJWzLasBT6u5V-UHpW5B5FyRrI3_P5D3cBq0PFVxb95tEP3Z6TR_oBnM3G4P1VolxmkF_tXxopJ49gIeKaWrTYRzRFIM20y8gyzJobFLNl9AiwVHJncVcwhHpTwXMOM4oN3oMrs_0jews8BxMpcB3-cP-s_j1xfY_o0')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#3</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.7</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">Verde Garden</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Organic</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Healthy</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "Highly relevant to your 'Healthy' requirement. Ranked top for sustainable sourcing this month."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+<!-- Restaurant Card 4 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.4s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A rustic yet elegant Italian trattoria with white linen tablecloths, vintage wine bottles on shelves, and warm terracotta floors. Soft candlelight flickers against stone walls, creating a timeless romantic vibe. The lighting is low and amber-toned." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDCgFMhIaSDJSv-16Odj5kQOLf-dHly_sFr62Jm5SCS86GmtLsg8YsXkFonLlxWHHwJgsEBkGm8iKRdA0Lv6qrE_MhgdL6geWyZvNBgr6DO82BP0UnxNoFI-iufn1Vf7eDJp3-qZh5INJf2tCirbYEDdE4I3ZA53Uqo5RSkZppF4gpsg2agVQt_TKUbS530EWrxHqnJfiorq-UbvztByjwBWNOkF0awyt94JqknBVtCeQ_bZ-U8qlVvBJMLxevltTxMYCdBFDfbYIw')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#4</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.6</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">Osteria Antica</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Italian</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Artisanal</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "Selected for its consistent quality and quiet acoustic environment, perfect for your date night."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+<!-- Restaurant Card 5 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.5s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A futuristic rooftop lounge with sleek curved furniture, violet and magenta ambient lighting, and a glass floor section. The setting overlooks a glowing metropolis at night with streaks of light from traffic below. A highly stylized, cutting-edge aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBd9uFwqu8DSOs6ka3HLe2NSif70UCFm7kKCNSz8yHww5VHYvJ3ckZuK65mLhdFdXFWp8Vlz26UDd-oCbv8Ur8Dygel6n08jHsONkI5gq5eE-Rw1MmPdLa0b3UWYt6vQ0977yK4eyZ5l2Opk-w6Z-Sj1jEmwCEyeClCBDig9NZTJ8izdqIkeYWMVFZq45ITVHLfPedJY4RKpnShAhqqdWxNnhnfafvF5vBSn7IOvw4a8xj7t5iDlLYqnQnVEnBID1u6DWcU12n-WvY')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#5</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.4</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">Sky Loft AI</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Modernist</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Rooftop</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "The rooftop view matches your preference. AI notes: Best visited during sunset for the dynamic lighting."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+<!-- Restaurant Card 6 -->
+<article class="glass-panel rounded-2xl overflow-hidden hover-glow transition-all duration-300 staggered-fade-up" style="animation-delay: 0.6s;">
+<div class="relative h-48 w-full">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A cozy, hidden speakeasy bar with dark wood paneling, leather armchairs, and shelves filled with old books. A single spotlight hits a small wooden stage where a jazz musician performs. The mood is secretive, warm, and sophisticated." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAuFShAWgqmkR3_27OGUFxchmdgmXvJaKWMX29X4kHDRCgqB3DvMs-MSbmmPbAQHpbyARjH-daxMeCKHpHVyWi2fGMaTffXqBpJUM_JN5Jh0e06pbeRetg8lPCxN_M7BLvM8HuOXPpS2kvC9Pn6_T2x-VKLMmUJzC5ddM6bCmba-mMG5zo5pcnC7ja9zyMwlewVnMNEh2ywLhJYjLUSQCxaI8pBzxrohe361WTZg7v3-jk0-ZZS0mZqCGrhEKZs-13HP1j7x_Ilbv8')"></div>
+<div class="absolute top-3 left-3 px-3 py-1 crimson-gradient rounded-lg text-white font-bold text-sm shadow-lg">#6</div>
+<div class="absolute bottom-3 left-3 flex gap-1">
+<span class="px-2 py-0.5 bg-green-500/90 text-white rounded text-[11px] font-bold flex items-center gap-0.5"><span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">star</span> 4.3</span>
+<span class="px-2 py-0.5 bg-black/50 backdrop-blur-md text-yellow-400 rounded text-[11px] font-bold">$$</span>
+</div>
+</div>
+<div class="p-gutter space-y-3">
+<div>
+<h4 class="font-headline-md text-on-surface truncate">The Library Crypt</h4>
+<div class="flex flex-wrap gap-1 mt-1">
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Cocktails</span>
+<span class="text-[11px] font-label-caps text-secondary px-2 py-0.5 bg-secondary/10 rounded border border-secondary/20">Speakeasy</span>
+</div>
+</div>
+<blockquote class="italic text-sm text-on-surface-variant border-l-4 border-crimson-accent pl-3 py-1">
+                                "AI hidden gem alert. Low visibility on standard apps but high organic social chatter for vibes."
+                            </blockquote>
+<button class="w-full py-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-on-surface font-semibold text-sm transition-colors">View Details</button>
+</div>
+</article>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for Budget Toggles
+        const budgetButtons = document.querySelectorAll('aside button');
+        budgetButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if(btn.parentElement.classList.contains('flex')) {
+                   const peers = btn.parentElement.querySelectorAll('button');
+                   peers.forEach(p => p.classList.remove('active-pill', 'shadow-lg', 'shadow-crimson-accent/20'));
+                   btn.classList.add('active-pill', 'shadow-lg', 'shadow-crimson-accent/20');
+                }
+            });
+        });
+
+        // Simulating Recommendation Loading
+        const cta = document.querySelector('button.crimson-gradient');
+        cta.addEventListener('click', () => {
+            const originalContent = cta.innerHTML;
+            cta.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Recalibrating...';
+            cta.classList.add('opacity-80');
+            
+            setTimeout(() => {
+                cta.innerHTML = originalContent;
+                cta.classList.remove('opacity-80');
+                
+                // Re-trigger animations
+                const cards = document.querySelectorAll('.staggered-fade-up');
+                cards.forEach((card, i) => {
+                    card.style.animation = 'none';
+                    card.offsetHeight; // trigger reflow
+                    card.style.animation = `fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards ${i * 0.1}s`;
+                });
+            }, 1200);
+        });
+    </script>
+</body></html>
