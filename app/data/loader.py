@@ -2,7 +2,6 @@
 
 import os
 import pandas as pd
-from datasets import load_dataset
 import logging
 from app.config import get_settings
 
@@ -32,9 +31,9 @@ def load_restaurant_data() -> pd.DataFrame:
     # Download dataset from Hugging Face
     logger.info("Downloading dataset '%s' from Hugging Face", dataset_name)
     try:
-        # Load from Hugging Face datasets
-        dataset = load_dataset(dataset_name, split="train")
-        df = dataset.to_pandas()
+        # Load directly via pandas to avoid holding Arrow + pandas in memory simultaneously
+        csv_url = f"https://huggingface.co/datasets/{dataset_name}/resolve/main/zomato.csv"
+        df = pd.read_csv(csv_url)
         
         # Ensure cache directory exists
         os.makedirs(cache_dir, exist_ok=True)
