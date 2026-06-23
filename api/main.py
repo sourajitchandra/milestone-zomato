@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List
 
@@ -38,18 +39,34 @@ ALLOWED_ORIGINS: List[str] = [
 # ---------------------------------------------------------------------------
 _repo: RestaurantRepository | None = None
 _service: RecommendationService | None = None
+_startup_complete: bool = False
+_startup_error: str | None = None
+
+
+def _load_in_background() -> None:
+    """Load the dataset in a background thread so the server starts immediately."""
+    global _repo, _service, _startup_complete, _startup_error
+    try:
+        logger.info("🚀 Background: loading RestaurantRepository …")
+        _repo = RestaurantRepository()
+        _service = RecommendationService(_repo)
+        logger.info("✅ Repository loaded — %d records.", len(_repo.get_all()))
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("❌ Failed to load repository: %s", exc)
+        _startup_error = str(exc)
+    finally:
+        _startup_complete = True
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load the dataset once at startup; tear down cleanly on shutdown."""
-    global _repo, _service
-    logger.info("🚀 Startup: loading RestaurantRepository …")
-    _repo = RestaurantRepository()
-    _service = RecommendationService(_repo)
-    logger.info("✅ Repository loaded — %d records.", len(_repo.get_all()))
+    """Kick off background loading; tear down cleanly on shutdown."""
+    t = threading.Thread(target=_load_in_background, daemon=True)
+    t.start()
+    logger.info("🚀 Server started — dataset loading in background thread.")
     yield
     logger.info("🛑 Shutdown: releasing resources.")
+    global _repo, _service
     _repo = None
     _service = None
 
@@ -94,12 +111,37 @@ def _get_repo() -> RestaurantRepository:
 # ---------------------------------------------------------------------------
 @app.get("/health", tags=["meta"])
 def health() -> Dict[str, Any]:
-    """Liveness probe used by Railway health-checks."""
-    svc = _get_service()
+    """Liveness probe used by Railway health-checks.
+
+    Returns 200 immediately — even while the dataset is still loading —
+    so Railway does not kill the deployment before it is ready.
+    Once loading is complete the status reflects the real state.
+    """
+    if _startup_error:
+        # Loading finished but with an error — still 200 so Railway keeps
+        # the replica alive; operators can inspect via /health response body.
+        return {
+            "status": "degraded",
+            "ready": False,
+            "error": _startup_error,
+            "groq_active": False,
+            "restaurants_loaded": 0,
+        }
+
+    if not _startup_complete or _service is None:
+        # Still initialising — return 200 so health check passes
+        return {
+            "status": "starting",
+            "ready": False,
+            "groq_active": False,
+            "restaurants_loaded": 0,
+        }
+
     return {
         "status": "ok",
-        "groq_active": svc.groq_client is not None,
-        "restaurants_loaded": len(_get_repo().get_all()) if _repo else 0,
+        "ready": True,
+        "groq_active": _service.groq_client is not None,
+        "restaurants_loaded": len(_repo.get_all()) if _repo else 0,
     }
 
 
