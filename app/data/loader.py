@@ -2,10 +2,10 @@
 
 import io
 import os
-import tempfile
 import logging
 
 import pandas as pd
+import pyarrow.parquet as pq
 import requests
 
 logger = logging.getLogger(__name__)
@@ -22,18 +22,39 @@ _PARQUET_URLS = [
 _DOWNLOAD_TIMEOUT = 300  # seconds per shard
 _CHUNK_SIZE = 1024 * 1024  # 1 MB chunks for streaming download
 
+# Only load the columns the preprocessor actually uses.
+# Parquet is columnar — skipping unused columns (url, phone, etc.) cuts
+# in-memory size from ~500 MB to ~80 MB, well within Railway's 512 MB limit.
+_NEEDED_COLUMNS = [
+    "name",
+    "location",
+    "rate",
+    "approx_cost(for two people)",
+    "cuisines",
+    "address",
+    "online_order",
+    "book_table",
+    "votes",
+    "rest_type",
+    "dish_liked",
+    "reviews_list",
+    "menu_item",
+    "listed_in(type)",
+    "listed_in(city)",
+]
+
 
 def _download_parquet_shard(url: str, shard_index: int) -> pd.DataFrame:
-    """Downloads a single parquet shard via streaming HTTP and reads it into a DataFrame."""
+    """Downloads a single parquet shard via streaming HTTP, then reads only
+    the columns required by the preprocessor to stay within Railway's RAM limit."""
     logger.info("  Streaming shard %d from: %s", shard_index, url)
 
     headers = {"User-Agent": "python-requests/zomato-ai"}
     with requests.get(url, headers=headers, timeout=_DOWNLOAD_TIMEOUT, stream=True) as resp:
         resp.raise_for_status()
         total = int(resp.headers.get("Content-Length", 0))
-        logger.info("  Shard %d size: %.1f MB", shard_index, total / 1024 / 1024)
+        logger.info("  Shard %d compressed size: %.1f MB", shard_index, total / 1024 / 1024)
 
-        # Stream into an in-memory buffer
         buf = io.BytesIO()
         downloaded = 0
         for chunk in resp.iter_content(chunk_size=_CHUNK_SIZE):
@@ -41,11 +62,22 @@ def _download_parquet_shard(url: str, shard_index: int) -> pd.DataFrame:
                 buf.write(chunk)
                 downloaded += len(chunk)
 
-        logger.info("  Shard %d: downloaded %.1f MB", shard_index, downloaded / 1024 / 1024)
-        buf.seek(0)
-        df = pd.read_parquet(buf)
-        logger.info("  Shard %d: %d rows parsed.", shard_index, len(df))
-        return df
+    logger.info("  Shard %d: download complete (%.1f MB)", shard_index, downloaded / 1024 / 1024)
+    buf.seek(0)
+
+    # Use pyarrow to read only the needed columns — avoids loading the full
+    # ~500 MB in-memory representation of every column.
+    pf = pq.ParquetFile(buf)
+    available = pf.schema_arrow.names
+    columns = [c for c in _NEEDED_COLUMNS if c in available]
+    missing = [c for c in _NEEDED_COLUMNS if c not in available]
+    if missing:
+        logger.warning("  Shard %d: columns not found in file (skipping): %s", shard_index, missing)
+
+    table = pf.read(columns=columns)
+    df = table.to_pandas()
+    logger.info("  Shard %d: %d rows, %d columns loaded.", shard_index, len(df), len(df.columns))
+    return df
 
 
 def load_restaurant_data() -> pd.DataFrame:
@@ -62,7 +94,7 @@ def load_restaurant_data() -> pd.DataFrame:
     if os.path.exists(cache_path):
         try:
             logger.info("Loading cached dataset from %s", cache_path)
-            df = pd.read_parquet(cache_path)
+            df = pd.read_parquet(cache_path, columns=_NEEDED_COLUMNS)
             logger.info("Loaded %d rows from cache.", len(df))
             return df
         except Exception as e:
