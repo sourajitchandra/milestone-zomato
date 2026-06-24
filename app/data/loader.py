@@ -22,9 +22,9 @@ _PARQUET_URLS = [
 _DOWNLOAD_TIMEOUT = 300  # seconds per shard
 _CHUNK_SIZE = 1024 * 1024  # 1 MB chunks for streaming download
 
-# Only load the columns the preprocessor actually uses.
-# Parquet is columnar — skipping unused columns (url, phone, etc.) cuts
-# in-memory size from ~500 MB to ~80 MB, well within Railway's 512 MB limit.
+# Only the columns actually used downstream.
+# reviews_list / menu_item / dish_liked go into raw_metadata but are NEVER
+# sent to the LLM (see formatter.py) — dropping them cuts RAM by ~80%.
 _NEEDED_COLUMNS = [
     "name",
     "location",
@@ -36,9 +36,6 @@ _NEEDED_COLUMNS = [
     "book_table",
     "votes",
     "rest_type",
-    "dish_liked",
-    "reviews_list",
-    "menu_item",
     "listed_in(type)",
     "listed_in(city)",
 ]
@@ -81,16 +78,31 @@ def _download_parquet_shard(url: str, shard_index: int) -> pd.DataFrame:
 
 
 def load_restaurant_data() -> pd.DataFrame:
-    """Loads the Zomato restaurant dataset from Hugging Face or a local Parquet cache.
+    """Loads the Zomato restaurant dataset.
+
+    Priority order:
+      1. Bundled parquet (data/restaurants.parquet) committed to git — instant, no network
+      2. Runtime cache (data/cache/restaurants.parquet) from a previous download
+      3. Live download from Hugging Face (fallback, slow on first boot)
 
     Returns:
         pd.DataFrame: The raw loaded dataset.
     """
-    # Define cache path
-    cache_dir = os.path.join("data", "cache")
-    cache_path = os.path.join(cache_dir, "restaurants.parquet")
+    # 1. Bundled file committed to git (fastest path — zero network calls)
+    bundled_path = os.path.join("data", "restaurants.parquet")
+    if os.path.exists(bundled_path):
+        try:
+            logger.info("📦 Loading bundled dataset from %s", bundled_path)
+            avail_cols = pd.read_parquet(bundled_path, columns=None).columns.tolist()
+            cols = [c for c in _NEEDED_COLUMNS if c in avail_cols]
+            df = pd.read_parquet(bundled_path, columns=cols)
+            logger.info("✅ Loaded %d rows from bundled file.", len(df))
+            return df
+        except Exception as e:
+            logger.warning("Bundled file load failed: %s — trying cache.", e)
 
-    # Try loading from cache first
+    # 2. Runtime cache from a previous download
+    cache_path = os.path.join("data", "cache", "restaurants.parquet")
     if os.path.exists(cache_path):
         try:
             logger.info("Loading cached dataset from %s", cache_path)
